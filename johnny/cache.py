@@ -57,6 +57,17 @@ def disallowed_table(*tables):
         else bool(settings.BLACKLIST.intersection(tables))
 
 
+def is_query_random(query):
+    """
+    Controls every query for the possibility of ORDER BY RAND().
+    """
+    pattern = re.compile('RAND\(\)', re.IGNORECASE)
+    matches = pattern.search(query)
+    if matches:
+        return True
+    return False
+
+
 def get_backend(**kwargs):
     """
     Get's a QueryCacheBackend object for the given options and current
@@ -328,7 +339,7 @@ class QueryCacheBackend(object):
                 signals.qc_skip.send(sender=cls, tables=tables,
                     query=(sql, params, cls.query.ordering_aliases),
                     key=key)
-            if tables and not blacklisted:
+            if tables and not blacklisted and not is_query_random(cls.as_sql()[0]):
                 gen_key = self.keyhandler.get_generation(*tables, **{'db': db})
                 key = self.keyhandler.sql_key(gen_key, sql, params,
                                               cls.get_ordering(),
