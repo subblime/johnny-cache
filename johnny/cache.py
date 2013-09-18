@@ -61,7 +61,7 @@ def is_query_random(query):
     """
     Controls every query for the possibility of ORDER BY RAND().
     """
-    pattern = re.compile('RAND\(\)', re.IGNORECASE)
+    pattern = re.compile(r'RAND\(', re.IGNORECASE)
     matches = pattern.search(query)
     if matches:
         return True
